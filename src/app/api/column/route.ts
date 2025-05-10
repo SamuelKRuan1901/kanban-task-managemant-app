@@ -13,15 +13,14 @@ export async function PATCH(req: NextRequest) {
   await connectDB();
   try {
     const board = await Board.findOne({ _id: slug }).exec();
-    if (!board)
-      return Response.json({ status: 404, message: 'Board not found' });
+    if (!board) return Response.json({ status: 404 });
     const updatedColumns = [
       ...board.columns,
       ...checkedColumn.filter((item: string) => !board.columns.includes(item))
     ];
     await Board.updateOne({ _id: slug }, { columns: updatedColumns });
-    return Response.json({ body });
+    return Response.json({ status: 200 });
   } catch (error) {
-    return Response.json({ error });
+    return Response.json({ status: 500, error });
   }
 }

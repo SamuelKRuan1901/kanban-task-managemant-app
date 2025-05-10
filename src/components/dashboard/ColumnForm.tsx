@@ -21,6 +21,7 @@ import { ColumnSchema } from '@/schema';
 import { BoardContext } from '@/contexts/BoardContext';
 import { useContext } from 'react';
 import MultiplyValueInput from './MultiplyValueInput';
+import { toast } from 'sonner';
 
 const ColumnForm = () => {
   const { setCreateColumn, slug, getBoard } = useContext(BoardContext);
@@ -37,10 +38,18 @@ const ColumnForm = () => {
         method: 'PATCH',
         body: JSON.stringify({ data, slug })
       });
-      console.log(res);
+      if (res.status === 404) {
+        toast('Board not found');
+      }
+      if (res.status === 500) {
+        toast('Error creating column');
+      }
       await getBoard();
+      setCreateColumn(false);
+      toast('Column created successfully');
     } catch (error) {
-      console.log(error);
+      toast('Error creating column');
+      throw error;
     }
   };
   return (

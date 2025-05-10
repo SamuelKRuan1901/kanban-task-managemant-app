@@ -38,6 +38,7 @@ import { useContext, useEffect } from 'react';
 import { redirect } from 'next/navigation';
 import { BoardContext } from '@/contexts/BoardContext';
 import TaskForm from './TaskForm';
+import { toast } from 'sonner';
 
 const TaskView = ({
   chosenTask,
@@ -76,10 +77,19 @@ const TaskView = ({
       await fetch('/api/task', {
         method: 'PATCH',
         body: JSON.stringify({ data, taskId, slug })
+      }).then((res) => {
+        if (res.status === 404) {
+          toast('Task not found');
+        }
+        if (res.status === 500) {
+          toast('Error updating task');
+        }
       });
       await getTasks();
+      toast('Task updated successfully');
     } catch (error) {
-      console.log(error);
+      toast('Error updating task');
+      throw error;
     }
   }
 
@@ -182,7 +192,7 @@ const TaskView = ({
                               return (
                                 <FormItem
                                   key={item._id}
-                                  className='flex flex-row items-center justify-start space-x-3 space-y-0 bg-slate-800 p-2'
+                                  className='flex flex-row items-center justify-start space-x-3 space-y-0 bg-slate-200 hover:bg-slate-200/50 dark:bg-slate-800 dark:hover:bg-slate-800/50 p-2'
                                 >
                                   <FormControl>
                                     <Checkbox

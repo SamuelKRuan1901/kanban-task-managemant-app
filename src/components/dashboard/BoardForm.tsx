@@ -22,6 +22,7 @@ import { BoardSchema } from '@/schema';
 import { BoardContext } from '@/contexts/BoardContext';
 import { useContext } from 'react';
 import MultiplyValueInput from './MultiplyValueInput';
+import { toast } from 'sonner';
 
 const BoardForm = ({
   name = '',
@@ -44,13 +45,22 @@ const BoardForm = ({
   const onSubmit = async (data: z.infer<typeof BoardSchema>) => {
     try {
       if (slug) {
-        console.log(data, slug);
-        const res = await fetch('/api/board', {
-          method: 'PATCH',
-          body: JSON.stringify({ data, slug })
-        });
-        console.log(res);
-        await getBoard();
+        try {
+          await fetch('/api/board', {
+            method: 'PATCH',
+            body: JSON.stringify({ data, slug })
+          }).then((res) => {
+            if (res.status === 500) {
+              toast('Error updating board');
+            }
+          });
+          await getBoard();
+          setCreateBoard(false);
+          toast('Board updated successfully');
+        } catch (error) {
+          toast('Error updating board');
+          throw error;
+        }
         return;
       }
       const res = await fetch('/api/board', {
@@ -62,8 +72,11 @@ const BoardForm = ({
       });
       console.log(res);
       await getBoard();
+      setCreateBoard(false);
+      toast('Board created successfully');
     } catch (error) {
-      console.log(error);
+      toast('Error creating board');
+      throw error;
     }
   };
 

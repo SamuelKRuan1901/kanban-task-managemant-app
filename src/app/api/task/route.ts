@@ -5,7 +5,6 @@ import { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  console.log(body);
   const { boardId, taskTitle, desc, subtasks, status } = body;
   const checkedSubtasks = subtasks.filter((item: string) => item !== '');
   const objectSubtasks = checkedSubtasks.map((item: string) => ({
@@ -23,10 +22,9 @@ export async function POST(req: NextRequest) {
     });
 
     await newTask.save();
-    console.log(newTask);
-    return Response.json({ body });
+    return Response.json({ status: 200 });
   } catch (error) {
-    return Response.json({ error });
+    return Response.json({ status: 500, error });
   }
 }
 
@@ -55,9 +53,9 @@ export async function PATCH(req: NextRequest) {
       };
     });
     await task?.save();
-    return Response.json({ body });
+    return Response.json({ status: 200 });
   } catch (error) {
-    return Response.json({ error });
+    return Response.json({ status: 500, error });
   }
 }
 
@@ -68,9 +66,9 @@ export async function DELETE(req: NextRequest) {
   await connectDB();
   try {
     await Task.deleteOne({ _id: taskId, boardId: slug });
-    return Response.json({ body });
+    return Response.json({ status: 200 });
   } catch (error) {
-    return Response.json({ error });
+    return Response.json({ status: 500, error });
   }
 }
 
@@ -78,38 +76,49 @@ export async function PUT(req: NextRequest) {
   const body = await req.json();
   const { taskId, slug, data } = body;
   const checkedSubtasks = data.subtasks.filter((item: string) => item !== '');
-  console.log(data);
+  const objectSubtasks = checkedSubtasks.map((item: string) => ({
+    title: item,
+    isCompleted: false
+  }));
   await connectDB();
   try {
     const task = await Task.findOne({ _id: taskId, boardId: slug }).exec();
-    if (!task) return Response.json({ status: 404, message: 'Task not found' });
+    if (!task) return Response.json({ status: 404 });
     task.title = data.taskTitle;
     task.description = data.desc;
     task.status = data.status;
-    const updatedSubtasks = checkedSubtasks.map(
-      (item: string, index: string | number) => {
-        // If an existing subtask exists at this index, update it.
-        if (task.subtasks && task.subtasks[index]) {
-          const existingSubtask = task.subtasks[index];
-          // If the title differs from the new title, update it
-          if (existingSubtask.title !== item) {
-            return { ...existingSubtask, title: item };
-          }
-          // Otherwise, keep the existing object.
-          return existingSubtask;
-        } else {
-          // If there is no subtask at this index, create a new one.
-          return { title: item, isCompleted: false, _id: new Object() };
-        }
-      }
-    );
-    task.subtasks = updatedSubtasks;
 
-    console.log('Updated subtasks:', task.subtasks);
-    await task.save();
-    console.log(task.subtasks);
-    return Response.json({ body });
+    function updateSubtasks(original: subtaskType[], modified: subtaskType[]) {
+      // Create a Map to quickly look up an original task by its title.
+      const originalMap = new Map(original.map((task) => [task.title, task]));
+
+      // Build the updated tasks array based solely on the modified list.
+      // This automatically drops any original tasks not present in modified.
+      const updated = modified.map((modTask) => {
+        if (originalMap.has(modTask.title)) {
+          // There is a task with the same title in the original list.
+          const origTask = originalMap.get(modTask.title);
+          // Retain true if the original had isCompleted true, otherwise use the modified value.
+          return {
+            title: modTask.title,
+            isCompleted: origTask?.isCompleted ? true : modTask.isCompleted,
+            _id: origTask?._id
+          };
+        } else {
+          // No matching original task; use the modified one as is.
+          return modTask;
+        }
+      });
+
+      return updated;
+    }
+
+    const newSubtasks = updateSubtasks(task.subtasks, objectSubtasks);
+    console.log(newSubtasks);
+    task.subtasks = newSubtasks;
+    await task?.save();
+    return Response.json({ status: 200 });
   } catch (error) {
-    return Response.json({ error });
+    return Response.json({ status: 500, error });
   }
 }

@@ -30,6 +30,7 @@ import {
   SelectValue
 } from '../ui/select';
 import MultiplyValueInput from './MultiplyValueInput';
+import { toast } from 'sonner';
 
 const TaskForm = ({
   title = '',
@@ -69,29 +70,44 @@ const TaskForm = ({
   };
 
   const onSubmit = async (data: z.infer<typeof TaskSchema>) => {
-    console.log(data);
     if (exitedTask) {
       try {
-        const res = await fetch('/api/task', {
+        await fetch('/api/task', {
           method: 'PUT',
           body: JSON.stringify({ data, taskId, slug })
+        }).then((res) => {
+          if (res.status === 404) {
+            toast('Task not found');
+          }
+          if (res.status === 500) {
+            toast('Error updating task');
+          }
         });
-        console.log(res);
+
         await getTasks();
+        setExitedTask(false);
+        toast('Task updated successfully');
       } catch (error) {
-        console.log(error);
+        toast('Error updating task');
+        throw error;
       }
       return;
     }
     try {
-      const res = await fetch('/api/task', {
+      await fetch('/api/task', {
         method: 'POST',
         body: JSON.stringify(data)
+      }).then((res) => {
+        if (res.status === 500) {
+          throw new Error('Error creating task');
+        }
       });
-      console.log(res);
       await getTasks();
+      setCreateTask(false);
+      toast('Task created successfully');
     } catch (error) {
-      console.log(error);
+      toast('Error creating task');
+      throw error;
     }
   };
   return (

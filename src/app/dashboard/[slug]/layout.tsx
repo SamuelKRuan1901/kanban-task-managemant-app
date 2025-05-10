@@ -2,8 +2,6 @@
 import TaskForm from '@/components/dashboard/TaskForm';
 import { BoardContext } from '@/contexts/BoardContext';
 import { useContext } from 'react';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import ColumnForm from '@/components/dashboard/ColumnForm';
 import BoardForm from '@/components/dashboard/BoardForm';
 import DeleteConfirmBox from '@/components/dashboard/DeleteConfirmBox';
@@ -12,7 +10,6 @@ const BoardSinglePageLayout = ({ children }: { children: React.ReactNode }) => {
   const {
     createColumn,
     createTask,
-    setCreateColumn,
     boards,
     slug,
     createBoard,
@@ -27,33 +24,9 @@ const BoardSinglePageLayout = ({ children }: { children: React.ReactNode }) => {
 
   const boardById = boards?.filter((board) => board._id === slug);
   return (
-    <section className='w-full h-full p-5 overflow-auto dark:bg-slate-950 bg-slate-200 flex gap-5 relative'>
+    <section className='w-auto h-full p-5 dark:bg-slate-950 bg-slate-200 flex gap-5 relative overflow-auto'>
       {children}
-      {boardById[0]?.columns.length !== 0 && (
-        <div
-          className={`w-60 bg-slate-400 dark:bg-slate-800
-         dark:hover:bg-slate-800/50  rounded-md flex items-center 
-         justify-center cursor-pointer hover:bg-slate-400/50`}
-          onClick={() => setCreateColumn(true)}
-        >
-          <Plus />
-          <span className='text-xl font-semibold'>Add Column</span>
-        </div>
-      )}
-      {boardById[0]?.columns.length === 0 && (
-        <div
-          className={`w-full h-full flex flex-col items-center justify-center gap-5 text-lg font-semibold`}
-        >
-          <p>This board is empty. Create a new column to get started.</p>
-          <Button
-            className='w-60 h-12 rounded-full cursor-pointer'
-            onClick={() => setCreateColumn(true)}
-          >
-            <Plus />
-            <span className='text-xl font-semibold'>Add Column</span>
-          </Button>
-        </div>
-      )}
+
       {createColumn && <ColumnForm />}
       {createTask === true && exitedTask === false && (
         <TaskForm title={''} desc={''} subtasks={[]} status={''} />
