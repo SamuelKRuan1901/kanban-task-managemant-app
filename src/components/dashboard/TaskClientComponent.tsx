@@ -1,34 +1,31 @@
 'use client';
+
 import ColumnItem from '@/components/dashboard/ColumnItem';
 import TaskItem from '@/components/dashboard/TaskItem';
 import Link from 'next/link';
 import { useContext, useEffect, useState } from 'react';
 import { BoardContext } from '@/contexts/BoardContext';
-// import TaskView from '@/components/dashboard/TaskView';
 import { taskType, boardType } from '@/lib/types';
 import TaskView from '@/components/dashboard/TaskView';
+import AddColumn from '@/components/dashboard/AddColumn';
 
-const TaskSinglePage = ({
-  params
+const TaskClientComponent = ({
+  slug,
+  task
 }: {
-  params: { slug: string; column: string; task: string };
+  slug: string;
+  task: string;
 }) => {
+  const { boards, setSlug, tasks, taskId, setTaskId } =
+    useContext(BoardContext);
   const [board, setBoard] = useState({} as boardType);
   const [tasksByBoardId, setTasksByBoardId] = useState([] as taskType[]);
   const [chosenTask, setChosenTask] = useState({} as taskType);
 
   const statuses = (board?.columns as string[]) || [];
 
-  const { boards, slug, setSlug, tasks, taskId, setTaskId } =
-    useContext(BoardContext);
-
   useEffect(() => {
-    const getBoardAndTasks = async () => {
-      const {
-        slug,
-        // column,
-        task
-      } = await params;
+    const getBoardAndTasks = () => {
       const boardsArray = Array.isArray(boards) ? boards : [];
       const chosenBoard = boardsArray.find((board) => board._id === slug);
       const tasksByBoardId = tasks.filter((task) => task.boardId === slug);
@@ -38,21 +35,19 @@ const TaskSinglePage = ({
       setSlug(slug);
       setTaskId(task);
       setBoard(chosenBoard as boardType);
-      setTasksByBoardId(tasksByBoardId as unknown as taskType[]);
+      setTasksByBoardId(tasksByBoardId as taskType[]);
       setChosenTask(chosenTask as taskType);
     };
     getBoardAndTasks();
-  }, [params, boards, setSlug, tasks, setTaskId]);
+  }, [boards, setSlug, tasks, setTaskId, slug, task]);
 
   return (
-    <section className='w-auto h-full overflow-auto dark:bg-slate-950 bg-slate-200 flex gap-5'>
-      <div className='flex gap-5'>
+    <section className='w-full h-full overflow-auto dark:bg-slate-950 bg-slate-200 flex gap-5'>
+      <div className='w-full flex gap-5'>
         {board?.columns?.map((item, index) => (
           <ColumnItem key={index} columnName={item}>
             {tasksByBoardId
-              .filter(
-                (task) => task.status.toLowerCase() === item.toLowerCase()
-              )
+              .filter((t) => t.status.toLowerCase() === item.toLowerCase())
               .map((task) => (
                 <div key={task._id} className='m-0 p-0 flex flex-col gap-5'>
                   {task.status.toLowerCase() === item.toLowerCase() && (
@@ -66,6 +61,9 @@ const TaskSinglePage = ({
               ))}
           </ColumnItem>
         ))}
+        <div className='w-60'>
+          <AddColumn />
+        </div>
       </div>
       <TaskView
         chosenTask={chosenTask}
@@ -77,4 +75,4 @@ const TaskSinglePage = ({
   );
 };
 
-export default TaskSinglePage;
+export default TaskClientComponent;

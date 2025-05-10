@@ -9,7 +9,6 @@ export async function POST(req: NextRequest) {
   const formedColumns = checkedColumns.map((column: string) =>
     column.toUpperCase()
   );
-  console.log(formedBoardName, formedColumns);
   await connectDB();
 
   try {
@@ -19,9 +18,9 @@ export async function POST(req: NextRequest) {
     });
     await newBoard.save();
   } catch (error) {
-    return Response.json({ error });
+    return Response.json({ status: 500, error });
   }
-  return Response.json({ formedBoardName, formedColumns });
+  return Response.json({ status: 200 });
 }
 
 export async function GET() {
@@ -47,9 +46,9 @@ export async function PATCH(req: NextRequest) {
       { _id: slug },
       { name: formedBoardName, columns: formedColumns }
     );
-    return Response.json({ body });
+    return Response.json({ status: 200 });
   } catch (error) {
-    return Response.json({ error });
+    return Response.json({ status: 500, error });
   }
 }
 
@@ -60,8 +59,8 @@ export async function DELETE(req: NextRequest) {
   try {
     await Board.deleteOne({ _id: slug });
     await Task.deleteMany({ boardId: slug });
-    return Response.json({ body });
+    return Response.json({ status: 200 });
   } catch (error) {
-    return Response.json({ error });
+    return Response.json({ status: 500, error });
   }
 }

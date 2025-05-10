@@ -3,6 +3,7 @@ import { projects } from '@/lib/data';
 import { taskType } from '@/lib/types';
 import { redirect } from 'next/navigation';
 import React, { createContext, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 interface BoardContextProps {
   boardName: string;
@@ -113,8 +114,10 @@ export const BoardProvider = ({ children }: { children: React.ReactNode }) => {
       });
       await getTasks();
       setDeleteTask(false);
+      toast('Task deleted successfully');
     } catch (error) {
-      console.log(error);
+      toast('Error deleting task');
+      throw error;
     }
   };
 
@@ -130,8 +133,10 @@ export const BoardProvider = ({ children }: { children: React.ReactNode }) => {
       console.log(res);
       await getBoard();
       setDeleteBoard(false);
+      toast('Board deleted successfully');
     } catch (error) {
-      console.log(error);
+      toast('Error deleting board');
+      throw error;
     }
     redirect('/dashboard');
   };
