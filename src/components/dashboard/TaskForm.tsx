@@ -22,7 +22,6 @@ import { TaskSchema } from '@/schema';
 import { BoardContext, boardType } from '@/contexts/BoardContext';
 import { useContext } from 'react';
 import { Textarea } from '../ui/textarea';
-import SubTaskInput from './SubTaskInput';
 import {
   Select,
   SelectContent,
@@ -30,38 +29,76 @@ import {
   SelectTrigger,
   SelectValue
 } from '../ui/select';
+import MultiplyValueInput from './MultiplyValueInput';
 
-const TaskForm = () => {
-  const { setCreateTask, boards, slug } = useContext(BoardContext);
+const TaskForm = ({
+  title = '',
+  desc = '',
+  subtasks = [],
+  status = ''
+}: {
+  title: string;
+  desc: string;
+  subtasks: { title: string; isCompleted: boolean }[];
+  status: string;
+}) => {
+  const {
+    setCreateTask,
+    boards,
+    slug,
+    getTasks,
+    setExitedTask,
+    exitedTask,
+    taskId
+  } = useContext(BoardContext);
   const board = boards.find((board) => board._id === slug) as boardType;
   const form = useForm<z.infer<typeof TaskSchema>>({
     resolver: zodResolver(TaskSchema),
     defaultValues: {
       boardId: slug,
-      taskTitle: '',
-      desc: '',
-      subtasks: [],
-      status: ''
+      taskTitle: title,
+      desc: desc,
+      subtasks: subtasks.map((item) => item.title),
+      status: status
     }
   });
 
+  const handleCloseForm = () => {
+    setCreateTask(false);
+    setExitedTask(false);
+  };
+
   const onSubmit = async (data: z.infer<typeof TaskSchema>) => {
     console.log(data);
+    if (exitedTask) {
+      try {
+        const res = await fetch('/api/task', {
+          method: 'PUT',
+          body: JSON.stringify({ data, taskId, slug })
+        });
+        console.log(res);
+        await getTasks();
+      } catch (error) {
+        console.log(error);
+      }
+      return;
+    }
     try {
       const res = await fetch('/api/task', {
         method: 'POST',
         body: JSON.stringify(data)
       });
       console.log(res);
+      await getTasks();
     } catch (error) {
       console.log(error);
     }
   };
   return (
-    <div className='absolute top-0 left-0 w-full h-full bg-slate-500/50 flex items-center justify-center'>
+    <div className='absolute top-0 left-0 w-full h-screen bg-slate-500/50 flex items-center justify-center'>
       <Card className='w-96 max-md:w-80 rounded-md'>
         <CardHeader>
-          <CardTitle>Add New Board</CardTitle>
+          <CardTitle>{exitedTask ? 'Edit Task' : 'Add New Board'}</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -118,7 +155,13 @@ const TaskForm = () => {
                   <FormItem>
                     <FormLabel>Subtasks</FormLabel>
                     <FormControl>
-                      <SubTaskInput {...field} placeholder='e.g. Make coffee' />
+                      <MultiplyValueInput
+                        initialValues={field.value}
+                        {...field}
+                        onChange={field.onChange}
+                        buttonDefaultContent='Add New Subtask'
+                        buttonDynamicContent='Add Another Subtask'
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -156,7 +199,7 @@ const TaskForm = () => {
                 className='w-full rounded-full cursor-pointer bg-indigo-400 hover:bg-indigo-400/50 text-md font-bold'
                 type='submit'
               >
-                Create New Board
+                {exitedTask ? 'Edit Task' : 'Create New Board'}
               </Button>
             </form>
           </Form>
@@ -165,7 +208,7 @@ const TaskForm = () => {
           <Button
             variant={'outline'}
             className='w-full rounded-full cursor-pointer'
-            onClick={() => setCreateTask(false)}
+            onClick={handleCloseForm}
           >
             Cancel
           </Button>

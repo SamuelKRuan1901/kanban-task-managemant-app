@@ -34,7 +34,7 @@ const DashboardPage = () => {
           <span>Add A New Board</span>
         </Link>
       </Button>
-      {createBoard === true && <BoardForm />}
+      {createBoard === true && <BoardForm name={''} columns={[]} slug={''} />}
     </div>
   );
 };

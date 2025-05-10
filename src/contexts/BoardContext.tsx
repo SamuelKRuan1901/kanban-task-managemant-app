@@ -1,6 +1,7 @@
 'use client';
 import { projects } from '@/lib/data';
 import { taskType } from '@/lib/types';
+import { redirect } from 'next/navigation';
 import React, { createContext, useEffect, useState } from 'react';
 
 interface BoardContextProps {
@@ -24,8 +25,18 @@ interface BoardContextProps {
   setTasks: React.Dispatch<React.SetStateAction<taskType[]>>;
   slug: string;
   setSlug: React.Dispatch<React.SetStateAction<string>>;
+  taskId: string;
+  setTaskId: React.Dispatch<React.SetStateAction<string>>;
+  exitedTask: boolean;
+  setExitedTask: React.Dispatch<React.SetStateAction<boolean>>;
+  deleteTask: boolean;
+  setDeleteTask: React.Dispatch<React.SetStateAction<boolean>>;
+  deleteBoard: boolean;
+  setDeleteBoard: React.Dispatch<React.SetStateAction<boolean>>;
   getBoard: () => Promise<void>;
   getTasks: () => Promise<void>;
+  handleDeleteBoard: () => Promise<void>;
+  handleDeleteTask: () => Promise<void>;
 }
 
 export interface boardType {
@@ -54,6 +65,10 @@ export const BoardProvider = ({ children }: { children: React.ReactNode }) => {
   const [boards, setBoards] = useState<boardType[]>([] as boardType[]);
   const [tasks, setTasks] = useState<taskType[]>([] as taskType[]);
   const [slug, setSlug] = useState<string>('');
+  const [taskId, setTaskId] = useState<string>('');
+  const [exitedTask, setExitedTask] = useState<boolean>(false);
+  const [deleteTask, setDeleteTask] = useState<boolean>(false);
+  const [deleteBoard, setDeleteBoard] = useState<boolean>(false);
 
   const getBoard = async () => {
     try {
@@ -90,6 +105,37 @@ export const BoardProvider = ({ children }: { children: React.ReactNode }) => {
       .catch((err) => console.log(err));
   };
 
+  const handleDeleteTask = async () => {
+    try {
+      await fetch('/api/task', {
+        method: 'DELETE',
+        body: JSON.stringify({ taskId, slug })
+      });
+      await getTasks();
+      setDeleteTask(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDeleteBoard = async () => {
+    try {
+      const res = await fetch('/api/board', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ slug })
+      });
+      console.log(res);
+      await getBoard();
+      setDeleteBoard(false);
+    } catch (error) {
+      console.log(error);
+    }
+    redirect('/dashboard');
+  };
+
   useEffect(() => {
     getBoard();
     getTasks();
@@ -117,7 +163,17 @@ export const BoardProvider = ({ children }: { children: React.ReactNode }) => {
     getBoard,
     getTasks,
     slug,
-    setSlug
+    setSlug,
+    taskId,
+    setTaskId,
+    exitedTask,
+    setExitedTask,
+    deleteTask,
+    setDeleteTask,
+    deleteBoard,
+    setDeleteBoard,
+    handleDeleteTask,
+    handleDeleteBoard
   };
   return (
     <BoardContext.Provider value={values}>{children}</BoardContext.Provider>

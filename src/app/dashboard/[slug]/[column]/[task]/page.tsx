@@ -16,11 +16,11 @@ const TaskSinglePage = ({
   const [board, setBoard] = useState({} as boardType);
   const [tasksByBoardId, setTasksByBoardId] = useState([] as taskType[]);
   const [chosenTask, setChosenTask] = useState({} as taskType);
-  const [taskId, setTaskId] = useState('');
 
   const statuses = (board?.columns as string[]) || [];
 
-  const { boards, slug, setSlug, tasks } = useContext(BoardContext);
+  const { boards, slug, setSlug, tasks, taskId, setTaskId } =
+    useContext(BoardContext);
 
   useEffect(() => {
     const getBoardAndTasks = async () => {
@@ -42,18 +42,20 @@ const TaskSinglePage = ({
       setChosenTask(chosenTask as taskType);
     };
     getBoardAndTasks();
-  }, [params, boards, setSlug, tasks]);
+  }, [params, boards, setSlug, tasks, setTaskId]);
 
   return (
     <section className='w-auto h-full overflow-auto dark:bg-slate-950 bg-slate-200 flex gap-5'>
       <div className='flex gap-5'>
         {board?.columns?.map((item, index) => (
-          <ColumnItem key={index} columnName={item} tasks={[]}>
+          <ColumnItem key={index} columnName={item}>
             {tasksByBoardId
-              .filter((task) => task.status === item)
+              .filter(
+                (task) => task.status.toLowerCase() === item.toLowerCase()
+              )
               .map((task) => (
                 <div key={task._id} className='m-0 p-0 flex flex-col gap-5'>
-                  {task.status === item && (
+                  {task.status.toLowerCase() === item.toLowerCase() && (
                     <Link
                       href={`/dashboard/${slug}/${task.status}/${task._id}`}
                     >

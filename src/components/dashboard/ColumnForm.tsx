@@ -16,23 +16,32 @@ import {
   FormLabel,
   FormMessage
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { ColumnSchema } from '@/schema';
 import { BoardContext } from '@/contexts/BoardContext';
 import { useContext } from 'react';
+import MultiplyValueInput from './MultiplyValueInput';
 
 const ColumnForm = () => {
-  const { setCreateColumn } = useContext(BoardContext);
+  const { setCreateColumn, slug, getBoard } = useContext(BoardContext);
   const form = useForm<z.infer<typeof ColumnSchema>>({
     resolver: zodResolver(ColumnSchema),
     defaultValues: {
-      columnName: ''
+      columnName: []
     }
   });
 
-  const onSubmit = (data: z.infer<typeof ColumnSchema>) => {
-    console.log(data);
+  const onSubmit = async (data: z.infer<typeof ColumnSchema>) => {
+    try {
+      const res = await fetch('/api/column', {
+        method: 'PATCH',
+        body: JSON.stringify({ data, slug })
+      });
+      console.log(res);
+      await getBoard();
+    } catch (error) {
+      console.log(error);
+    }
   };
   return (
     <div className='absolute top-0 left-0 w-full h-full bg-slate-500/50 flex items-center justify-center'>
@@ -50,10 +59,12 @@ const ColumnForm = () => {
                   <FormItem>
                     <FormLabel>Column Name</FormLabel>
                     <FormControl>
-                      <Input
-                        className='rounded-none'
-                        placeholder='Enter Column name'
+                      <MultiplyValueInput
+                        initialValues={field.value}
                         {...field}
+                        onChange={field.onChange}
+                        buttonDefaultContent='Add New Column'
+                        buttonDynamicContent='Add Another Column'
                       />
                     </FormControl>
                     <FormMessage />

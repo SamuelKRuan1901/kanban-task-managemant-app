@@ -47,7 +47,7 @@ const AppSidebar = () => {
     setBoardName(name);
   };
 
-  console.log(boards);
+  const sortedBoards = [...boards].sort((a, b) => a.name.localeCompare(b.name));
 
   useEffect(() => {
     setMounted(true);
@@ -77,7 +77,7 @@ const AppSidebar = () => {
           </SidebarGroupLabel>
           <SidebarGroupContent className='justify-between'>
             <SidebarMenu>
-              {boards.map((board: boardType) => (
+              {sortedBoards.map((board: boardType) => (
                 <SidebarMenuItem key={board._id}>
                   <SidebarMenuButton
                     className={`hover:bg-indigo-400 hover:text-primary-foreground ${

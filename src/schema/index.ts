@@ -8,21 +8,23 @@ export const BoardSchema = z.object({
 });
 
 export const ColumnSchema = z.object({
-  columnName: z.string().min(2, {
-    message: 'Column name must be at least 2 characters.'
+  columnName: z.array(z.string()).min(1, {
+    message: 'Column name is required.'
   })
 });
 
 export const TaskSchema = z.object({
   boardId: z.string(),
   taskTitle: z.string().min(2, {
-    message: 'Task title must be at least 2 characters.'
+    message: 'Title is required.'
   }),
   desc: z.string().min(2, {
-    message: 'description must be at least 2 characters.'
+    message: 'description is required.'
   }),
   subtasks: z.array(z.string()),
-  status: z.string()
+  status: z.string().min(1, {
+    message: 'Status is required.'
+  })
 });
 
 export const TaskSubtaskSchema = z.object({

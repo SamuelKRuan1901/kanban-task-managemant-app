@@ -16,10 +16,16 @@ import {
 } from '../ui/dropdown-menu';
 
 const Header = () => {
-  const { setCreateTask, createTask } = useContext(BoardContext);
+  const { setCreateTask, setExitedTask, setCreateBoard, setDeleteBoard } =
+    useContext(BoardContext);
   const { open } = useSidebar();
   const path = usePathname();
   const pathname = path.split('/')[path.split('/').length - 1];
+
+  const handleCreateTask = () => {
+    setCreateTask(true);
+    setExitedTask(false);
+  };
 
   return (
     <header className='w-full h-16 flex items-center justify-between p-2 dark:bg-slate-900'>
@@ -39,6 +45,7 @@ const Header = () => {
             <Image
               src={Logo}
               alt='Logo'
+              priority
               width={24}
               height={24}
               className='w-8 h-8'
@@ -52,7 +59,7 @@ const Header = () => {
           variant={'default'}
           className='cursor-pointer rounded-full font-semibold'
           disabled={pathname === 'dashboard' ? true : false}
-          onClick={() => setCreateTask(!createTask)}
+          onClick={handleCreateTask}
         >
           <Plus />
           <span>New Task</span>
@@ -64,10 +71,18 @@ const Header = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className='w-56'>
-            <DropdownMenuCheckboxItem className='cursor-pointer font-semibold'>
+            <DropdownMenuCheckboxItem
+              className='cursor-pointer font-semibold'
+              disabled={pathname === 'dashboard' ? true : false}
+              onClick={() => setCreateBoard(true)}
+            >
               Edit Board
             </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem className='cursor-pointer text-red-500 font-semibold'>
+            <DropdownMenuCheckboxItem
+              className='cursor-pointer text-red-500 font-semibold'
+              disabled={pathname === 'dashboard' ? true : false}
+              onClick={() => setDeleteBoard(true)}
+            >
               Delete Board
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>

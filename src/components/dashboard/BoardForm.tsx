@@ -19,22 +19,40 @@ import {
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { BoardSchema } from '@/schema';
-import ColumnInput from './ColumnInput';
 import { BoardContext } from '@/contexts/BoardContext';
 import { useContext } from 'react';
+import MultiplyValueInput from './MultiplyValueInput';
 
-const BoardForm = () => {
+const BoardForm = ({
+  name = '',
+  columns = [],
+  slug = ''
+}: {
+  name: string;
+  columns: string[];
+  slug: string;
+}) => {
   const { setCreateBoard, getBoard } = useContext(BoardContext);
   const form = useForm<z.infer<typeof BoardSchema>>({
     resolver: zodResolver(BoardSchema),
     defaultValues: {
-      boardName: '',
-      boardColumn: []
+      boardName: name,
+      boardColumn: columns
     }
   });
 
   const onSubmit = async (data: z.infer<typeof BoardSchema>) => {
     try {
+      if (slug) {
+        console.log(data, slug);
+        const res = await fetch('/api/board', {
+          method: 'PATCH',
+          body: JSON.stringify({ data, slug })
+        });
+        console.log(res);
+        await getBoard();
+        return;
+      }
       const res = await fetch('/api/board', {
         method: 'POST',
         body: JSON.stringify({
@@ -53,7 +71,7 @@ const BoardForm = () => {
     <div className='absolute top-0 left-0 w-full h-full bg-slate-500/50 flex items-center justify-center'>
       <Card className='w-96 max-md:w-80 rounded-md'>
         <CardHeader>
-          <CardTitle>Add New Board</CardTitle>
+          <CardTitle>{slug ? 'Edit Board' : 'Add New Board'}</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -82,9 +100,12 @@ const BoardForm = () => {
                   <FormItem>
                     <FormLabel>Board Column</FormLabel>
                     <FormControl>
-                      <ColumnInput
+                      <MultiplyValueInput
                         {...field}
-                        placeholder='Add Columns eg: Todo, Doing, Done...'
+                        onChange={field.onChange}
+                        initialValues={field.value}
+                        buttonDefaultContent='Add New Column'
+                        buttonDynamicContent='Add Another Column'
                       />
                     </FormControl>
                     <FormMessage />
@@ -96,7 +117,7 @@ const BoardForm = () => {
                 className='w-full rounded-full cursor-pointer bg-indigo-400 hover:bg-indigo-400/50 text-md font-bold'
                 type='submit'
               >
-                Create New Board
+                {slug ? 'Save Edit' : 'Create New Board'}
               </Button>
             </form>
           </Form>

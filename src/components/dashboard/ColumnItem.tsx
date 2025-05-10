@@ -1,18 +1,14 @@
-import { taskType } from '@/lib/types';
+'use client';
 const ColumnItem = ({
   children,
-  columnName,
-  tasks
+  columnName
 }: {
   children?: React.ReactNode;
   columnName: string;
-  tasks: taskType[];
 }) => {
   return (
     <div className=' flex flex-col gap-5 w-60'>
-      <div className={`font-semibold `}>
-        {columnName} ({tasks.length})
-      </div>
+      <div className={`font-semibold `}>{columnName}</div>
       {children}
     </div>
   );

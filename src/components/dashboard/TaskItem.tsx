@@ -1,11 +1,9 @@
-import { subTaskType } from '@/lib/types';
-
 const TaskItem = ({
   title,
   subtasks
 }: {
   title: string;
-  subtasks: subTaskType[];
+  subtasks: { title: string; isCompleted: boolean }[];
 }) => {
   return (
     <div

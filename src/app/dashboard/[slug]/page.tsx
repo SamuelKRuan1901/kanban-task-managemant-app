@@ -43,7 +43,7 @@ const BoardSinglePage = ({ params }: { params: { slug: string } }) => {
     <section className='w-auto h-full overflow-auto dark:bg-slate-950 bg-slate-200 flex gap-5 relative'>
       <div className='flex w-full gap-5'>
         {board?.columns?.map((item, index) => (
-          <ColumnItem key={index} columnName={item} tasks={[]}>
+          <ColumnItem key={index} columnName={item}>
             {tasksByBoardId
               .filter((task) => task.status === item)
               .map((task) => (
